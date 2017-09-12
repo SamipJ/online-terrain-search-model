@@ -1,6 +1,4 @@
-import copy
 from dirtgenerator import generatedirt
-from dirtgenerator import generatedirtwith
 from collections import deque
 
 # board=generatedirtwith(5)
@@ -11,6 +9,9 @@ from collections import deque
 #             dirty.append((i,j))
 
 # print dirty
+global k
+global z
+
 class mystate:
     def __init__(self,dirtylist,row,col):
         self.dirtylist=dirtylist
@@ -73,24 +74,31 @@ class node:
 
     def cost(self,action):
         if action == "suck":
-            return 2
-        else:
             return 1
+        else:
+            return 2
 
 def checksol(node,finalstates):
+    # if node.state in finalstates:
+    #     return True
+    # else:
+    #     return False
+    for x in finalstates:
+        if node.state.dirtylist==x.dirtylist:
+            return True
+        else:
+            return False
+
+def checksolclean(node,finalstates):
     if node.state in finalstates:
         return True
     else:
         return False
-    # for x in finalstates:
-    #     if node.state.dirtylist==x.dirtylist:
-    #         return True
-    #     else:
-    #         return False
 
-def solution(node):
+def solution(node,finalstates,matrixsize):
     solarr=[]
     cost = 0
+    node=bfsclean(node,finalstates,matrixsize)
     end= (node.state.row,node.state.col)
     while node.parent!=None:
         solarr.append(node.action)
@@ -102,19 +110,77 @@ def solution(node):
     # print cost
     # return solarr
 
+def bfsclean(curnode,finalstates,matrixsize):
+    k=0
+    frontier=deque()
+    explored = set()
+    frontier.append(curnode)
+    explored.add(curnode.state)
+    action=["up","down","left","right"]
+    for x in frontier:
+        if checksolclean(x,finalstates):
+            # print "Yay"
+            return x
+    while(len(frontier)!=0):
+        k+=1
+        if(k%100000==0):
+            k=0
+            z+=1
+            print z
+        curnode=frontier.popleft()
+        # print "currentstate"
+        # print (curnode.state)
+        explored.add(curnode.state)
+        act = "suck"
+        if(curnode.check(act,matrixsize)):
+                childnode=node(curnode.do(act),curnode,act,matrixsize)
+                # print act
+                if childnode.state not in explored:
+                #         pass# print "alredy present"
+                # else :
+                    if checksolclean(childnode,finalstates):
+                            # print "Yay"
+                            return childnode
+                    else:
+                        frontier.append(childnode)
+                        explored.add(childnode.state)
+                        # print "to be explored"
+                       
+        else:
+            for act in action:
+                if(curnode.check(act,matrixsize)):
+                    # print act
+                    childnode=node(curnode.do(act),curnode,act,matrixsize)
+                    if childnode.state not in explored:
+                    #     # print "alredy present"
+                    # else :
+                        if checksolclean(childnode,finalstates):
+                            # print "Yay"
+                            return childnode
+                        else:
+                            frontier.append(childnode)
+                            explored.add(childnode.state)
+                            # print "to be explored"
 
 def bfs(initialstates,finalstates,matrixsize):
     k=0
+    z=0
     frontier=deque()
     explored = set()
     for i in range(4):
         frontier.append(node(initialstates[i],None,None,matrixsize))
         explored.add(initialstates[i])
     action=["up","down","left","right"]
+    for x in frontier:
+        if checksol(x,finalstates):
+            # print "Yay"
+            return solution(x,finalstates,matrixsize)
     while(len(frontier)!=0):
-        # k+=1
-        # if(k%100000==0):
-        #     print k
+        k+=1
+        if(k%100000==0):
+            k=0
+            z+=1
+            print z
         curnode=frontier.popleft()
         # print "currentstate"
         # print (curnode.state)
@@ -128,7 +194,7 @@ def bfs(initialstates,finalstates,matrixsize):
                 # else :
                     if checksol(childnode,finalstates):
                             # print "Yay"
-                            return solution(childnode)
+                            return solution(childnode,finalstates,matrixsize)
                     else:
                         frontier.append(childnode)
                         explored.add(childnode.state)
@@ -144,7 +210,7 @@ def bfs(initialstates,finalstates,matrixsize):
                     # else :
                         if checksol(childnode,finalstates):
                             # print "Yay"
-                            return solution(childnode)
+                            return solution(childnode,finalstates,matrixsize)
                         else:
                             frontier.append(childnode)
                             explored.add(childnode.state)

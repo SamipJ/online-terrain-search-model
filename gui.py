@@ -1,7 +1,9 @@
 import turtle
 import random
 from dirtgenerator import generatedirt
-from bfs import doeverything
+from idfs import doeverything as idfs
+from bfs import doeverything as bfs
+
 
 def initialiseturtle():
     wn = turtle.Screen()
@@ -15,7 +17,8 @@ def make_partitions(wn):
     width= float(wn.window_width())
     height= float(wn.window_height())
     skk = turtle.Turtle()
-    skk.speed(10)
+    skk.ht()
+    skk.speed(0)
     skk.pensize(3)
     skk.penup()
     skk.goto(width/3-width/2,-height/2)
@@ -70,7 +73,7 @@ def fillboard(wn,skk,xcord,ycord,i,j):
     skk.end_fill()
 
 
-def fillp2(wn,skk,board):
+def fillp2(wn,skk,board,matrixsize):
     width= float(wn.window_width())
     height= float(wn.window_height())
     def makeg1andg2():
@@ -89,16 +92,18 @@ def fillp2(wn,skk,board):
             skk.pendown()
             skk.forward(2*width/3)
     makeg1andg2()
-    for i in range(10):
-        for j in range(10):
+    for i in range(matrixsize):
+        for j in range(matrixsize):
             if board[i][j]==1:
                 fillboard(wn,skk,width/3-width/2,height/2,i,j)        
-    for i in range(10):
-        for j in range(10):
+    for i in range(matrixsize):
+        for j in range(matrixsize):
             if board[i][j]==1:
                 fillboard(wn,skk,2*width/3-width/2,height/2,i,j)     
 
-def fillg1(bfs,wn,skk):
+def fillg1(bfs,wn):
+    skk = turtle.Turtle()
+    skk.speed(10)
     width= float(wn.window_width())
     height= float(wn.window_height())
     hi=height/20
@@ -106,6 +111,17 @@ def fillg1(bfs,wn,skk):
     skk.pen(fillcolor="light green",pencolor="red",pensize=2)
     skk.penup()
     getpath(skk,width/3-width/2+bfs[0][1]*wj+.5*wj,height/2-bfs[0][0]*hi-.5*hi,bfs[2],wj,hi)
+
+def fillg2(bfs,wn):
+    skk = turtle.Turtle()
+    skk.speed(10)
+    width= float(wn.window_width())
+    height= float(wn.window_height())
+    hi=height/20
+    wj=width/30
+    skk.pen(fillcolor="light green",pencolor="blue",pensize=2)
+    skk.penup()
+    getpath(skk,2*width/3-width/2+bfs[0][1]*wj+.5*wj,height/2-bfs[0][0]*hi-.5*hi,bfs[2],wj,hi)
 
 def getpath(skk,xcord,ycord,list,wj,hi):
     skk.goto(xcord,ycord)
@@ -150,12 +166,17 @@ def getpath(skk,xcord,ycord,list,wj,hi):
             skk.forward(hi)
 
 if __name__=="__main__":
-    board=generatedirt(10)
+    matrixsize=10
+    board=generatedirt(matrixsize)
     wn=initialiseturtle()
     wn,skk=make_partitions(wn)
     skk.pensize(1)
     for_text_xcor = fillp1(wn,skk)
-    fillp2(wn,skk,board)
-    bfs=doeverything(board,10)
-    fillg1(bfs,wn,skk)
+    fillp2(wn,skk,board,matrixsize)
+    b=bfs(board,matrixsize)
+    print b
+    fillg2(b,wn)
+    a=idfs(board,matrixsize)
+    print a
+    fillg1(a,wn)
     turtle.done()
