@@ -1,0 +1,1 @@
+Enter percentage of dirt you want to generate : 
