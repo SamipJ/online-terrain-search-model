@@ -30,5 +30,5 @@ def generatedirt(matrixsize):
     
 
 if __name__ == '__main__':
-    num=int(raw_input("Enter MAtrix Size : "))
+    num=int(raw_input("Enter Matrix Size : "))
     generatedirt(num)

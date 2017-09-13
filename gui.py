@@ -3,6 +3,7 @@ import random
 from dirtgenerator import generatedirt
 from idfs import doeverything as idfs
 from bfs import doeverything as bfs
+from h1 import doeverything as greedy
 
 
 def initialiseturtle():
@@ -173,10 +174,15 @@ if __name__=="__main__":
     skk.pensize(1)
     for_text_xcor = fillp1(wn,skk)
     fillp2(wn,skk,board,matrixsize)
-    b=bfs(board,matrixsize)
+    # c=bfs(board,matrixsize)
+    # print c
+    # print len(c[2])
+    # fillg1(c,wn)
+    b=greedy(board,matrixsize)
     print b
+    print len(b[2])
     fillg2(b,wn)
-    a=idfs(board,matrixsize)
-    print a
-    fillg1(a,wn)
+    # a=idfs(board,matrixsize)
+    # print a
+    # fillg1(a,wn)
     turtle.done()

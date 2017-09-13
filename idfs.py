@@ -1,10 +1,12 @@
 from dirtgenerator import generatedirt
 
+
 class mystate:
     def __init__(self,dirtylist,row,col):
         self.dirtylist=dirtylist
         self.row=row
         self.col=col
+        
     def __repr__(self):
         return "Row :%s Coloumn :%s List:%s"%(self.row,self.col,self.dirtylist)
  
@@ -19,12 +21,12 @@ class mystate:
 
 
 class node:
-    def __init__(self,state,parent,action,matrixsize,depth):
+    def __init__(self,state,parent,action,depth,cost):
         self.state = state
         self.parent=parent
         self.action=action
         self.depth = depth
-
+        self.cost=cost
     def __repr__(self):
         return str(self.state)
  
@@ -32,13 +34,13 @@ class node:
         return self.state
 
     def check(self,action,matrixsize):
-        if action == "up" and self.state.row>0:
+        if action == "up" and self.state.row!=0:
             return True
-        elif action == "down" and self.state.row<matrixsize-1:
+        elif action == "down" and self.state.row!=matrixsize-1:
             return True
-        elif action == "left" and self.state.col>0:
+        elif action == "left" and self.state.col!=0:
             return True
-        elif action == "right" and self.state.col<matrixsize-1:
+        elif action == "right" and self.state.col!=matrixsize-1:
             return True
         elif action == "suck" and (self.state.row,self.state.col) in self.state.dirtylist :
             return True
@@ -58,7 +60,7 @@ class node:
             ind=self.state.dirtylist.index((self.state.row,self.state.col))
             return mystate(self.state.dirtylist[:ind]+self.state.dirtylist[ind+1:],self.state.row,self.state.col)
 
-    def cost(self,action):
+    def getcost(self,action):
         if action == "suck":
             return 1
         else:
@@ -70,30 +72,30 @@ def checksol(node,finalstates):
     else:
         return False
 
-def solution(node,finalstates,matrixsize):
+def solution(node,finalstates):
     solarr=[]
     cost = 0
     end= (node.state.row,node.state.col)
     while node.parent!=None:
         solarr.append(node.action)
-        cost+=node.cost(node.action)
+        cost+=node.getcost(node.action)
         node=node.parent
-    solarr= list(reversed(solarr))
+    solarr= solarr[::-1]
     begin=(node.state.row,node.state.col)
     return (begin,end,solarr,cost)
 
-def dls(initialstates,finalstates,matrixsize,depth):
-    actions=["left","right","up","down"]
+def dls(initialstates,finalstates,matrixsize,depth,explored):
+    actions=["suck","left","right","up","down"]
     stack=[]
-    explored=set()
     k=0
     z=0
     for i in initialstates:
-        curnode = node(i,None,None,matrixsize,0)
+        curnode = node(i,None,None,1,0)
         if checksol(curnode,finalstates):
-            return solution(curnode,finalstates,matrixsize)
+            print"YEs"
+            return solution(curnode,finalstates)
         stack.append(curnode)
-        explored.add(i)
+        explored[i]=0
     while len(stack)>0 :
         k+=1
         if(k%100000==0):
@@ -103,42 +105,35 @@ def dls(initialstates,finalstates,matrixsize,depth):
         curnode = stack.pop()
         # print explored
         # print curnode.state
-        act="suck"
-        if curnode.check(act,matrixsize):
+        for act in actions:
             # print act
-            childnode=node(curnode.do(act),curnode,act,matrixsize,curnode.depth+1)
-            # print childnode.state
-            # print explored
-            # print childnode.state in explored
-            if checksol(childnode,finalstates):
-                return solution(childnode,finalstates,matrixsize)
-            elif childnode.state in explored:
-                continue
-            else :
-                if (childnode.depth<depth):
-                    stack.append(childnode)
-                    explored.add(childnode.state)
-        else :
-            for act in actions:
-                # print act
-                if curnode.check(act,matrixsize):
-                    childnode=node(curnode.do(act),curnode,act,matrixsize,curnode.depth+1)
-                    
+            if curnode.check(act,matrixsize):
+                childnode=node(curnode.do(act),curnode,act,curnode.depth+1,curnode.cost+curnode.getcost(act))
+                if childnode.state not in explored:
                     if checksol(childnode,finalstates):
-                        return solution(childnode,finalstates,matrixsize)
-                    elif childnode.state in explored:
-                        continue  
-                    else :
-                        if (childnode.depth<depth):
+                        print "Yes"
+                        return solution(childnode,finalstates)
+                    elif (childnode.depth<=depth):
+                        stack.append(childnode)
+                        explored[childnode.state]=childnode.cost  
+                else:
+                    if explored[childnode.state]>=childnode.cost:
+                        if (childnode.depth<=depth):
                             stack.append(childnode)
-                            explored.add(childnode.state)  
+                            explored[childnode.state]=childnode.cost 
+                        
+                # elif childnode.state not in explored:
+                #     if (childnode.depth<=depth):
+                #         stack.append(childnode)
+                #         explored.add(childnode.state)  
     return None
 
 def idfs(initialstates,finalstates,matrixsize):
+    explored={}
     depth = 1#2*len(initialstates[0].dirtylist)-1
     while(True):
         print ("depth : %s"%(depth))
-        result=dls(initialstates,finalstates,matrixsize,depth)
+        result=dls(initialstates,finalstates,matrixsize,depth,explored)
         if (result!=None):
             return result
         depth+=1
@@ -159,6 +154,6 @@ def doeverything(board,matrixsize):
 
 
 if __name__=="__main__":
-    matrixsize=3
+    matrixsize=5
     board=generatedirt(matrixsize)
     print doeverything(board,matrixsize)

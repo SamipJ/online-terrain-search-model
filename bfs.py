@@ -167,9 +167,9 @@ def bfs(initialstates,finalstates,matrixsize):
     z=0
     frontier=deque()
     explored = set()
-    for i in range(4):
-        frontier.append(node(initialstates[i],None,None,matrixsize))
-        explored.add(initialstates[i])
+    for i in initialstates:
+        frontier.append(node(i,None,None,matrixsize))
+        explored.add(i)
     action=["up","down","left","right"]
     for x in frontier:
         if checksol(x,finalstates):
