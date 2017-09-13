@@ -85,7 +85,7 @@ def solution(node,finalstates):
     return (begin,end,solarr,cost)
 
 def dls(initialstates,finalstates,matrixsize,depth,explored):
-    actions=["suck","left","right","up","down"]
+    actions=["left","right","up","down"]
     stack=[]
     k=0
     z=0
@@ -105,9 +105,8 @@ def dls(initialstates,finalstates,matrixsize,depth,explored):
         curnode = stack.pop()
         # print explored
         # print curnode.state
-        for act in actions:
-            # print act
-            if curnode.check(act,matrixsize):
+        act="suck"
+        if curnode.check(act,matrixsize):
                 childnode=node(curnode.do(act),curnode,act,curnode.depth+1,curnode.cost+curnode.getcost(act))
                 if childnode.state not in explored:
                     if checksol(childnode,finalstates):
@@ -121,7 +120,24 @@ def dls(initialstates,finalstates,matrixsize,depth,explored):
                         if (childnode.depth<=depth):
                             stack.append(childnode)
                             explored[childnode.state]=childnode.cost 
-                        
+        else:
+            for act in actions:
+                # print act
+                if curnode.check(act,matrixsize):
+                    childnode=node(curnode.do(act),curnode,act,curnode.depth+1,curnode.cost+curnode.getcost(act))
+                    if childnode.state not in explored:
+                        if checksol(childnode,finalstates):
+                            print "Yes"
+                            return solution(childnode,finalstates)
+                        elif (childnode.depth<=depth):
+                            stack.append(childnode)
+                            explored[childnode.state]=childnode.cost  
+                    else:
+                        if explored[childnode.state]>=childnode.cost:
+                            if (childnode.depth<=depth):
+                                stack.append(childnode)
+                                explored[childnode.state]=childnode.cost 
+                            
                 # elif childnode.state not in explored:
                 #     if (childnode.depth<=depth):
                 #         stack.append(childnode)

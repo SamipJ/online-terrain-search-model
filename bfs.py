@@ -34,7 +34,7 @@ class mystate:
 
 
 class node:
-    def __init__(self,state,parent,action,matrixsize,):
+    def __init__(self,state,parent,action,matrixsize):
         self.state = state
         self.parent=parent
         self.action=action
@@ -184,7 +184,7 @@ def bfs(initialstates,finalstates,matrixsize):
         curnode=frontier.popleft()
         # print "currentstate"
         # print (curnode.state)
-        explored.add(curnode.state)
+        # explored.add(curnode.state)
         act = "suck"
         if(curnode.check(act,matrixsize)):
                 childnode=node(curnode.do(act),curnode,act,matrixsize)

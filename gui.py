@@ -4,6 +4,7 @@ from dirtgenerator import generatedirt
 from idfs import doeverything as idfs
 from bfs import doeverything as bfs
 from h1 import doeverything as greedy
+from h2 import doeverything as mst
 
 
 def initialiseturtle():
@@ -122,7 +123,7 @@ def fillg2(bfs,wn):
     wj=width/30
     skk.pen(fillcolor="light green",pencolor="blue",pensize=2)
     skk.penup()
-    getpath(skk,2*width/3-width/2+bfs[0][1]*wj+.5*wj,height/2-bfs[0][0]*hi-.5*hi,bfs[2],wj,hi)
+    getpathforg2(skk,2*width/3-width/2+bfs[0][1]*wj+.5*wj,height/2-bfs[0][0]*hi-.5*hi,bfs[2],wj,hi,hi/2)
 
 def getpath(skk,xcord,ycord,list,wj,hi):
     skk.goto(xcord,ycord)
@@ -166,23 +167,70 @@ def getpath(skk,xcord,ycord,list,wj,hi):
             skk.setheading(270)
             skk.forward(hi)
 
+
+def getpathforg2(skk,xcord,ycord,list,wj,hi,fillh):
+    skk.goto(xcord,ycord)
+    for i in list:
+        if i=="suck":
+            skk.penup()
+            skk.setheading(0)
+            skk.forward(.5*wj)
+            skk.right(90)
+            skk.forward(fillh if fillh > 0 else 0)
+            skk.begin_fill()
+            skk.pendown()
+            skk.right(90)
+            skk.forward(wj)
+            skk.right(90)
+            skk.forward(abs(fillh))
+            skk.right(90)
+            skk.forward(wj)
+            skk.right(90)
+            skk.forward(abs(fillh))
+            skk.penup()
+            skk.end_fill()
+            skk.setheading(0)
+            skk.back(.5*wj)
+            skk.left(90)
+            skk.forward(fillh if fillh > 0 else 0)
+        elif i=="left":
+            skk.pendown()
+            skk.setheading(180)
+            skk.forward(wj)
+        elif i=="right":
+            skk.pendown()
+            skk.setheading(0)
+            skk.forward(wj)
+        elif i=="up":
+            skk.pendown()
+            skk.setheading(90)
+            skk.forward(hi)
+        elif i=="down":
+            skk.pendown()
+            skk.setheading(270)
+            skk.forward(hi)
+
+
 if __name__=="__main__":
-    matrixsize=10
+    matrixsize=7
     board=generatedirt(matrixsize)
     wn=initialiseturtle()
     wn,skk=make_partitions(wn)
     skk.pensize(1)
     for_text_xcor = fillp1(wn,skk)
     fillp2(wn,skk,board,matrixsize)
-    # c=bfs(board,matrixsize)
-    # print c
-    # print len(c[2])
-    # fillg1(c,wn)
-    b=greedy(board,matrixsize)
-    print b
-    print len(b[2])
-    fillg2(b,wn)
+    d=mst(board,matrixsize)
+    print d
+    fillg2(d,wn)
+    c=bfs(board,matrixsize)
+    print c
+    print len(c[2])
+    fillg1(c,wn)
+    # b=greedy(board,matrixsize)
+    # print b
+    # print len(b[2])
+    # fillg2(b,wn)
     # a=idfs(board,matrixsize)
     # print a
-    # fillg1(a,wn)
+    # fillg2(a,wn)
     turtle.done()

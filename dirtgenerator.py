@@ -4,16 +4,6 @@ def printboard(board):
     for i in board:
         print i
 
-def generatedirtwith(num):
-    number=list(range(100))
-    shuffle(number)
-    board=[[0]*10 for i in range(10)]
-    for i in range(num):
-        j=number[i]
-        board[j/10][j%10]=1    
-    printboard(board)
-    return board
-
 def generatedirt(matrixsize):
     number=list(range(matrixsize**2))
     shuffle(number)
