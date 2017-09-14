@@ -1,5 +1,8 @@
+#Name:Samip Jasani ID:2015A7PS0127P
 from dirtgenerator import generatedirt
 from heapq import *
+import sys
+from time import time 
 
 class mystate:
     def __init__(self,dirtylist,row,col):
@@ -28,6 +31,7 @@ class node:
         self.parent = parent
         self.action = action
         self.score = score
+        self.matrixsize=matrixsize
 
     def __repr__(self):
         return self.state
@@ -54,7 +58,7 @@ class node:
         if action == "up":
             score += 2
             if (self.state.row-1,self.state.col) in self.state.dirtylist:
-                score += -5
+                score += -self.matrixsize
             if (self.state.row-1,self.state.col-1) in self.state.dirtylist:
                 score +=-1
             if (self.state.row-1,self.state.col+1) in self.state.dirtylist:
@@ -62,7 +66,7 @@ class node:
         elif action == "down":
             score += 2
             if (self.state.row+1,self.state.col) in self.state.dirtylist:
-                score += -5
+                score += -self.matrixsize
             if (self.state.row+1,self.state.col-1) in self.state.dirtylist:
                 score +=-1
             if (self.state.row+1,self.state.col+1) in self.state.dirtylist:
@@ -70,7 +74,7 @@ class node:
         elif action == "left":
             score += 2
             if (self.state.row,self.state.col-1) in self.state.dirtylist:
-                score += -5
+                score += -self.matrixsize
             if (self.state.row+1,self.state.col-1) in self.state.dirtylist:
                 score +=-1
             if (self.state.row-1,self.state.col-1) in self.state.dirtylist:
@@ -78,7 +82,7 @@ class node:
         elif action == "right":
             score += 2
             if (self.state.row,self.state.col+1) in self.state.dirtylist:
-                score += -5
+                score += -self.matrixsize
             if (self.state.row+1,self.state.col+1) in self.state.dirtylist:
                 score +=-1
             if (self.state.row-1,self.state.col+1) in self.state.dirtylist:
@@ -136,27 +140,31 @@ def gotofinal(curnode,finalstates,matrixsize):
     #     curnode=childnode
     return curnode,step1,step2
 
-def solution(node,finalstates,matrixsize):
+def solution(mynode,finalstates,matrixsize,numnodes,t0,maxi):
     solarr=[]
     cost = 0
     # print "before"
-    node,step1,step2 = gotofinal(node,finalstates,matrixsize)
+    mynode,step1,step2 = gotofinal(mynode,finalstates,matrixsize)
     # print "after"
     for i in range(step1[0]):
         # print i
+        cost+=2
         solarr.append(step1[1])
     # print solarr
     for i in range(step2[0]):
+        cost+=2
         solarr.append(step2[1])
     # print solarr
-    end= (node.state.row,node.state.col)
-    while node.parent!=None:
-        solarr.append(node.action)
-        cost+=node.cost(node.action)
-        node=node.parent
+    endcol=0 if step1[1]=="left" else matrixsize-1
+    endrow=0 if step2[1]=="up" else matrixsize-1
+    end= (endrow,endcol)
+    while mynode.parent!=None:
+        solarr.append(mynode.action)
+        cost+=mynode.cost(mynode.action)
+        mynode=mynode.parent
     solarr= solarr[::-1]
-    begin=(node.state.row,node.state.col)
-    return (begin,end,solarr,cost)
+    begin=(mynode.state.row,mynode.state.col)
+    return (begin,end,solarr,cost,numnodes,sys.getsizeof(node),round(time()-t0,3),maxi)
 
 def addtodict(node,myplaces):
     if node.score in myplaces:
@@ -165,9 +173,11 @@ def addtodict(node,myplaces):
         myplaces[node.score]=[node]
 
 def mstparody(initialstates,finalstates,matrixsize):
+    t0=time()
     k=0
     z=0
-    # explored=set()
+    numnodes=0
+    explored=set()
     actions=["left","right","up","down"]
     scoreheap=[]
     myplaces={}
@@ -175,11 +185,14 @@ def mstparody(initialstates,finalstates,matrixsize):
         x=node(i,None,None,matrixsize,0)
         if checksol(x,finalstates):
             # print "Yay"
-            return solution(x,finalstates,matrixsize)
+            return solution(x,finalstates,matrixsize,0,t0,0)
         heappush(scoreheap,x.score)
+        numnodes+=1
         addtodict(x,myplaces)
-        # explored.add(i)
+        explored.add(i)
+    maxi=0
     while(len(scoreheap)!=0):
+        maxi=len(scoreheap) if len(scoreheap)>maxi else maxi
         k+=1
         if(k%100000==0):
             k=0
@@ -192,27 +205,28 @@ def mstparody(initialstates,finalstates,matrixsize):
         act = "suck"
         if(curnode.check(act,matrixsize)):
             childnode=node(curnode.do(act),curnode,act,matrixsize,curnode.getscore(act))
-            # if childnode not in explored:
-            if checksol(childnode,finalstates):
-                # print "yay"
-                return solution(childnode,finalstates,matrixsize)
-            else:
-                curnode=childnode
-                # print curnode.state
-                # heappush(scoreheap,childnode.score)
-                # addtodict(childnode,myplaces)
-                    # explored.add(childnode.state)
+            if childnode not in explored:
+                if checksol(childnode,finalstates):
+                    # print "yay"
+                    return solution(childnode,finalstates,matrixsize,numnodes,t0,maxi)
+                else:
+                    curnode=childnode
+                    # print curnode.state
+                    # heappush(scoreheap,childnode.score)
+                    # addtodict(childnode,myplaces)
+                        # explored.add(childnode.state)
         for act in actions:
             if(curnode.check(act,matrixsize)):
                 childnode=node(curnode.do(act),curnode,act,matrixsize,curnode.getscore(act))
-                # if childnode not in explored:
-                if checksol(childnode,finalstates):
-                    return solution(childnode,finalstates,matrixsize)
-                else:
+                if childnode not in explored:
+                    # if checksol(childnode,finalstates):
+                    #     return solution(childnode,finalstates,matrixsize,numnodes,t0)
+                    # else:
                     heappush(scoreheap,childnode.score)
+                    numnodes+=1
                     addtodict(childnode,myplaces)
-                            # explored.add(childnode.state)
-        # frontier.sort(key=lambda x:x.score,reverse=True)
+                                # explored.add(childnode.state)
+            # frontier.sort(key=lambda x:x.score,reverse=True)
 
 def getdirtylist(board,matrixsize):
     dirty=[]
@@ -230,6 +244,6 @@ def doeverything(board,matrixsize):
 
 
 if __name__=="__main__":
-    matrixsize=4
+    matrixsize=14
     board=generatedirt(matrixsize)
     print doeverything(board,matrixsize)

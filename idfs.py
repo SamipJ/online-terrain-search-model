@@ -1,5 +1,27 @@
+#Name:Samip Jasani ID:2015A7PS0127P
 from dirtgenerator import generatedirt
+import sys
+from time import time
 
+# def get_size(obj, seen=None):
+#     """Recursively finds size of objects"""
+#     size = sys.getsizeof(obj)
+#     if seen is None:
+#         seen = set()
+#     obj_id = id(obj)
+#     if obj_id in seen:
+#         return 0
+#     # Important mark as seen *before* entering recursion to gracefully handle
+#     # self-referential objects
+#     seen.add(obj_id)
+#     if isinstance(obj, dict):
+#         size += sum([get_size(v, seen) for v in obj.values()])
+#         size += sum([get_size(k, seen) for k in obj.keys()])
+#     elif hasattr(obj, '__dict__'):
+#         size += get_size(obj.__dict__, seen)
+#     elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+#         size += sum([get_size(i, seen) for i in obj])
+#     return size
 
 class mystate:
     def __init__(self,dirtylist,row,col):
@@ -72,31 +94,34 @@ def checksol(node,finalstates):
     else:
         return False
 
-def solution(node,finalstates):
+def solution(mynode,finalstates,numnode,maxstacksize,t0):
     solarr=[]
     cost = 0
-    end= (node.state.row,node.state.col)
-    while node.parent!=None:
-        solarr.append(node.action)
-        cost+=node.getcost(node.action)
-        node=node.parent
+    end= (mynode.state.row,mynode.state.col)
+    while mynode.parent!=None:
+        solarr.append(mynode.action)
+        cost+=mynode.getcost(mynode.action)
+        mynode=mynode.parent
     solarr= solarr[::-1]
-    begin=(node.state.row,node.state.col)
-    return (begin,end,solarr,cost)
+    begin=(mynode.state.row,mynode.state.col)
+    return (begin,end,solarr,cost,numnode,sys.getsizeof(node),maxstacksize,round(time()-t0,3))
 
-def dls(initialstates,finalstates,matrixsize,depth,explored):
+def dls(initialstates,finalstates,matrixsize,depth,explored,numnode,t0):
     actions=["left","right","up","down"]
     stack=[]
     k=0
     z=0
+    maxi=0
     for i in initialstates:
         curnode = node(i,None,None,1,0)
         if checksol(curnode,finalstates):
             print"YEs"
-            return solution(curnode,finalstates)
+            return solution(curnode,finalstates,numnode,0,t0)
         stack.append(curnode)
+        numnode+=1
         explored[i]=0
     while len(stack)>0 :
+        maxi=len(stack) if len(stack)>maxi else maxi
         k+=1
         if(k%100000==0):
             k=0
@@ -107,37 +132,43 @@ def dls(initialstates,finalstates,matrixsize,depth,explored):
         # print curnode.state
         act="suck"
         if curnode.check(act,matrixsize):
+                childnode=node(curnode.do(act),curnode,act,curnode.depth,curnode.cost+curnode.getcost(act))
+                if childnode.state not in explored:
+                    if checksol(childnode,finalstates):
+                        # print "Yes"
+                        return solution(childnode,finalstates,numnode,maxi,t0)
+                    elif (childnode.depth<=depth):
+                        curnode=childnode
+                        # stack.append(childnode)
+                        numnode+=1
+                        # explored[childnode.state]=childnode.cost  
+                else:
+                    if explored[childnode.state]>=childnode.cost:
+                        if (childnode.depth<=depth):
+                            curnode=childnode
+                            # stack.append(childnode)
+                            numnode+=1
+                            # explored[childnode.state]=childnode.cost 
+        
+        for act in actions:
+            # print act
+            if curnode.check(act,matrixsize):
                 childnode=node(curnode.do(act),curnode,act,curnode.depth+1,curnode.cost+curnode.getcost(act))
                 if childnode.state not in explored:
                     if checksol(childnode,finalstates):
                         print "Yes"
-                        return solution(childnode,finalstates)
+                        return solution(childnode,finalstates,numnode,maxi,t0)
                     elif (childnode.depth<=depth):
                         stack.append(childnode)
+                        numnode+=1
                         explored[childnode.state]=childnode.cost  
                 else:
                     if explored[childnode.state]>=childnode.cost:
                         if (childnode.depth<=depth):
                             stack.append(childnode)
+                            numnode+=1
                             explored[childnode.state]=childnode.cost 
-        else:
-            for act in actions:
-                # print act
-                if curnode.check(act,matrixsize):
-                    childnode=node(curnode.do(act),curnode,act,curnode.depth+1,curnode.cost+curnode.getcost(act))
-                    if childnode.state not in explored:
-                        if checksol(childnode,finalstates):
-                            print "Yes"
-                            return solution(childnode,finalstates)
-                        elif (childnode.depth<=depth):
-                            stack.append(childnode)
-                            explored[childnode.state]=childnode.cost  
-                    else:
-                        if explored[childnode.state]>=childnode.cost:
-                            if (childnode.depth<=depth):
-                                stack.append(childnode)
-                                explored[childnode.state]=childnode.cost 
-                            
+                        
                 # elif childnode.state not in explored:
                 #     if (childnode.depth<=depth):
                 #         stack.append(childnode)
@@ -145,11 +176,13 @@ def dls(initialstates,finalstates,matrixsize,depth,explored):
     return None
 
 def idfs(initialstates,finalstates,matrixsize):
+    t0=time()
     explored={}
     depth = 1#2*len(initialstates[0].dirtylist)-1
+    numnode=0
     while(True):
         print ("depth : %s"%(depth))
-        result=dls(initialstates,finalstates,matrixsize,depth,explored)
+        result=dls(initialstates,finalstates,matrixsize,depth,explored,numnode,t0)
         if (result!=None):
             return result
         depth+=1
@@ -170,6 +203,6 @@ def doeverything(board,matrixsize):
 
 
 if __name__=="__main__":
-    matrixsize=5
+    matrixsize=10
     board=generatedirt(matrixsize)
     print doeverything(board,matrixsize)

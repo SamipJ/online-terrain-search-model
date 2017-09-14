@@ -1,3 +1,5 @@
+#Name:Samip Jasani ID:2015A7PS0127P
+
 from dirtgenerator import generatedirt
 from collections import deque
 
@@ -181,6 +183,7 @@ def bfs(initialstates,finalstates,matrixsize):
             k=0
             z+=1
             print z
+            print "{} nodes".format(len(frontier))
         curnode=frontier.popleft()
         # print "currentstate"
         # print (curnode.state)
@@ -232,6 +235,6 @@ def doeverything(board,matrixsize):
 
 
 if __name__=="__main__":
-    matrixsize=10
+    matrixsize=20
     board=generatedirt(matrixsize)
     print doeverything(board,matrixsize)

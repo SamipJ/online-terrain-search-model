@@ -1,5 +1,7 @@
+#Name:Samip Jasani ID:2015A7PS0127P
 from dirtgenerator import generatedirt
-
+import sys
+from time import time
 class mystate:
     def __init__(self,dirtylist,row,col):
         self.dirtylist=dirtylist
@@ -122,20 +124,22 @@ def gotofinal(curnode,finalstates,matrixsize):
         curnode=childnode
     return curnode
 
-def solution(node,finalstates,matrixsize):
+def solution(mynode,finalstates,matrixsize,numnodes,t0,maxi):
     solarr=[]
     cost = 0
-    node = gotofinal(node,finalstates,matrixsize)
-    end= (node.state.row,node.state.col)
-    while node.parent!=None:
-        solarr.append(node.action)
-        cost+=node.getcost(node.action)
-        node=node.parent
+    mynode = gotofinal(mynode,finalstates,matrixsize)
+    end= (mynode.state.row,mynode.state.col)
+    while mynode.parent!=None:
+        solarr.append(mynode.action)
+        cost+=mynode.getcost(mynode.action)
+        mynode=mynode.parent
     solarr= solarr[::-1]
-    begin=(node.state.row,node.state.col)
-    return (begin,end,solarr,cost)
+    begin=(mynode.state.row,mynode.state.col)
+    return (begin,end,solarr,cost,numnodes,sys.getsizeof(node),round(time()-t0,3),maxi)
 
 def greedy(initialstates,finalstates,matrixsize):
+    t0=time()
+    numnodes=0
     explored={}
     actions=["left","right","up","down"]
     stack=[]
@@ -151,15 +155,18 @@ def greedy(initialstates,finalstates,matrixsize):
     for i in initialstates:
         curnode = node(i,None,None,0)
         if checksol(curnode,finalstates):
-            return solution(curnode,finalstates,matrixsize)
+            return solution(curnode,finalstates,matrixsize,0,t0,0)
         childnodes.append(curnode)
     childnodes= sorted(childnodes, key=lambda x: x.key,reverse=False)
     # print "going in array"
     for childnode in childnodes:
         # print childnode.key
         stack.append(childnode)
+        numnodes+=1
         explored[childnode.state]=childnode.cost 
+    maxi=0
     while len(stack)>0 :
+        maxi=len(stack) if len(stack)>maxi else maxi
         k+=1
         if(k%100000==0):
             k=0
@@ -172,9 +179,10 @@ def greedy(initialstates,finalstates,matrixsize):
                 childnode=node(curnode.do(act),curnode,act,curnode.cost+curnode.getcost(act))
                 if childnode.state not in explored:
                     if checksol(childnode,finalstates):
-                        return solution(childnode,finalstates,matrixsize)
+                        return solution(childnode,finalstates,matrixsize,numnodes,t0,maxi)
                     else:
                         childnodes.append(childnode) 
+                        explored[childnode.state]=childnode.cost
                 else:
                     if explored[childnode.state]>=childnode.cost:
                         childnodes.append(childnode)
@@ -184,9 +192,10 @@ def greedy(initialstates,finalstates,matrixsize):
                     childnode=node(curnode.do(act),curnode,act,curnode.cost+curnode.getcost(act))
                     if childnode.state not in explored:
                         if checksol(childnode,finalstates):
-                            return solution(childnode,finalstates)
+                            return solution(childnode,finalstates,matrixsize,numnodes,t0,maxi)
                         else:
                             childnodes.append(childnode) 
+                            explored[childnode.state]=childnode.cost
                     else:
                         if explored[childnode.state]>=childnode.cost:
                             childnodes.append(childnode)
@@ -195,6 +204,7 @@ def greedy(initialstates,finalstates,matrixsize):
         for childnode in childnodes:
             # print childnode.key
             stack.append(childnode)
+            numnodes+=1
             explored[childnode.state]=childnode.cost 
     return None
 

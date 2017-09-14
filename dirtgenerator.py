@@ -1,3 +1,4 @@
+#Name:Samip Jasani ID:2015A7PS0127P
 from random import shuffle
 
 def printboard(board):
@@ -18,6 +19,16 @@ def generatedirt(matrixsize):
     printboard(board)
     return board
     
+def generatedirtwith(p,matrixsize):
+    number=list(range(matrixsize**2))
+    shuffle(number)
+    board=[[0]*matrixsize for i in range(matrixsize)]
+    p=int(round((p*matrixsize*matrixsize)/100))
+    for i in range(p):
+        j=number[i]
+        board[j/matrixsize][j%matrixsize]=1    
+    printboard(board)
+    return board
 
 if __name__ == '__main__':
     num=int(raw_input("Enter Matrix Size : "))
